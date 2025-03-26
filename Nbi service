@@ -1,0 +1,29 @@
+package com.example.nbiservice.service;
+
+import com.example.nbiservice.model.*;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import java.util.*;
+
+@Service
+public class NbiService {
+    private final String FAULT_MANAGEMENT_API_URL = "http://localhost:8080/fault-management/alarms";
+
+    public TapiContext getTapiAlarms() {
+        RestTemplate restTemplate = new RestTemplate();
+        FaultAlarm[] faultAlarms = restTemplate.getForObject(FAULT_MANAGEMENT_API_URL, FaultAlarm[].class);
+
+        List<TapiAlarm> tapiAlarms = new ArrayList<>();
+        for (FaultAlarm alarm : faultAlarms) {
+            tapiAlarms.add(new TapiAlarm(
+                alarm.getAlarmId(),
+                alarm.getTimestamp(),
+                alarm.getSeverity(),
+                Collections.singletonList(alarm.getDescription())
+            ));
+        }
+
+        TapiNotificationContext notificationContext = new TapiNotificationContext(tapiAlarms);
+        return new TapiContext(notificationContext);
+    }
+}
