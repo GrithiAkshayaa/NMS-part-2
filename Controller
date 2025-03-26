@@ -1,0 +1,26 @@
+package com.example.faultmanagement.controller;
+
+import com.example.faultmanagement.model.FaultAlarm;
+import com.example.faultmanagement.service.FaultService;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
+
+@RestController
+@RequestMapping("/fault-management")
+public class FaultManagementController {
+    private final FaultService faultService;
+
+    public FaultManagementController(FaultService faultService) {
+        this.faultService = faultService;
+    }
+
+    @GetMapping("/alarms")
+    public List<FaultAlarm> getAllAlarms() {
+        return faultService.getAllAlarms();
+    }
+
+    @GetMapping("/severity/{level}")
+    public List<FaultAlarm> getSeverity(@PathVariable String level) {
+        return faultService.getAlarmsBySeverity(level);
+    }
+}
