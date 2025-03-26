@@ -1,0 +1,11 @@
+package com.example.nbiservice.model;
+
+public class TapiContext {
+    private TapiNotificationContext tapiNotificationContext;
+
+    public TapiContext(TapiNotificationContext tapiNotificationContext) {
+        this.tapiNotificationContext = tapiNotificationContext;
+    }
+
+    public TapiNotificationContext getTapiNotificationContext() { return tapiNotificationContext; }
+}
