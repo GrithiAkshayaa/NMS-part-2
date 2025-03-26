@@ -1,0 +1,20 @@
+package com.example.nbiservice.controller;
+
+import com.example.nbiservice.model.TapiContext;
+import com.example.nbiservice.service.NbiService;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/nbi-service")
+public class NbiController {
+    private final NbiService nbiService;
+
+    public NbiController(NbiService nbiService) {
+        this.nbiService = nbiService;
+    }
+
+    @GetMapping("/alarms")
+    public TapiContext getTapiAlarms() {
+        return nbiService.getTapiAlarms();
+    }
+}
