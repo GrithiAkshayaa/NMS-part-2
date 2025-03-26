@@ -1,0 +1,28 @@
+package com.example.faultmanagement.service;
+
+import com.example.faultmanagement.model.FaultAlarm;
+import org.springframework.stereotype.Service;
+import java.util.*;
+
+@Service
+public class FaultService {
+    private List<FaultAlarm> alarms = Arrays.asList(
+        new FaultAlarm("A001", "CRITICAL", "Network failure", "2025-03-26T10:00:00Z"),
+        new FaultAlarm("A002", "MAJOR", "Packet loss detected", "2025-03-26T10:05:00Z"),
+        new FaultAlarm("A003", "MINOR", "High latency", "2025-03-26T10:10:00Z")
+    );
+
+    public List<FaultAlarm> getAllAlarms() {
+        return alarms;
+    }
+
+    public List<FaultAlarm> getAlarmsBySeverity(String severity) {
+        List<FaultAlarm> result = new ArrayList<>();
+        for (FaultAlarm alarm : alarms) {
+            if (alarm.getSeverity().equalsIgnoreCase(severity)) {
+                result.add(alarm);
+            }
+        }
+        return result;
+    }
+}
