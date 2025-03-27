@@ -1,0 +1,51 @@
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
+import java.util.*;
+import java.util.stream.Collectors;
+
+@Service
+public class FaultService {
+
+    private final RestTemplate restTemplate;
+
+    @Value("${getAllAlarms}")
+    private String getAllAlarmsUrl;
+
+    @Value("${getSeverity}")
+    private String getSeverityUrl;
+
+    @Autowired
+    public FaultService(RestTemplate restTemplate, JsonToPropertiesConverter converter) {
+        this.restTemplate = restTemplate;
+        converter.convertJsonToProperties(); // Convert JSON to properties on startup
+    }
+
+    public List<FaultAlarm> getAllAlarms() {
+        List<Map<String, Object>> apiResponse = restTemplate.getForObject(getAllAlarmsUrl, List.class);
+        
+        // Convert List<Map<String, Object>> to List<FaultAlarm>
+        return apiResponse.stream()
+                          .map(this::convertToFaultAlarm)
+                          .collect(Collectors.toList());
+    }
+
+    public List<FaultAlarm> getAlarmsBySeverity(String severity) {
+        String severityUrl = getSeverityUrl.replace("{level}", severity);
+        List<Map<String, Object>> apiResponse = restTemplate.getForObject(severityUrl, List.class);
+        
+        // Convert List<Map<String, Object>> to List<FaultAlarm>
+        return apiResponse.stream()
+                          .map(this::convertToFaultAlarm)
+                          .collect(Collectors.toList());
+    }
+
+    private FaultAlarm convertToFaultAlarm(Map<String, Object> data) {
+        FaultAlarm faultAlarm = new FaultAlarm();
+        faultAlarm.setId((Integer) data.get("id"));
+        faultAlarm.setMessage((String) data.get("message"));
+        faultAlarm.setSeverity((String) data.get("severity"));
+        return faultAlarm;
+    }
+}
