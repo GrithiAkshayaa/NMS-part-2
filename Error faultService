@@ -1,0 +1,21 @@
+public List<FaultAlarm> getAllAlarms() {
+    List<Map<String, Object>> apiResponse = restTemplate.getForObject(getAllAlarmsUrl, List.class);
+    
+    // Convert Map<String, Object> to List<FaultAlarm>
+    List<FaultAlarm> faultAlarms = new ArrayList<>();
+    for (Map<String, Object> alarmData : apiResponse) {
+        FaultAlarm alarm = convertMapToFaultAlarm(alarmData);
+        faultAlarms.add(alarm);
+    }
+
+    return faultAlarms;
+}
+
+private FaultAlarm convertMapToFaultAlarm(Map<String, Object> alarmData) {
+    FaultAlarm alarm = new FaultAlarm();
+    alarm.setId((String) alarmData.get("id"));
+    alarm.setSeverity((String) alarmData.get("severity"));
+    alarm.setMessage((String) alarmData.get("message"));
+    alarm.setTimestamp((String) alarmData.get("timestamp"));
+    return alarm;
+}
