@@ -1,0 +1,59 @@
+import org.springframework.web.bind.annotation.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping("/performance")
+public class PerformanceController {
+
+    private final Map<String, List<PerformanceData>> performanceDataStore = new ConcurrentHashMap<>();
+
+    // POST API to store PerformanceData and convert to NBI format
+    @PostMapping("/convert")
+    public String convertAndSend(@RequestBody PerformanceData data) {
+        try {
+            if (data.getPortname() == null || data.getPortname().isEmpty() || data.getTimestamp() == null) {
+                return "Error: Port name and timestamp cannot be null or empty!";
+            }
+
+            System.out.println("Received performance data: " + data);
+            
+            // Store data in ConcurrentHashMap
+            performanceDataStore.computeIfAbsent(data.getPortname(), k -> new ArrayList<>()).add(data);
+
+            // Convert to NBI Format
+            NBIPerformanceData nbiData = PerformanceDataMapper.mapToNbiFormat(data);
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.writeValueAsString(nbiData);  // Return JSON response
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Error converting data to JSON";
+        }
+    }
+
+    // GET API to fetch performance data by portname and optional timestamp range
+    @GetMapping("/fetch")
+    public List<NBIPerformanceData> fetchPerformanceData(
+            @RequestParam String portname,
+            @RequestParam(required = false) String fromTimestamp,
+            @RequestParam(required = false) String toTimestamp) {
+
+        List<PerformanceData> dataList = performanceDataStore.getOrDefault(portname, Collections.emptyList());
+
+        // Apply timestamp filtering if needed
+        if (fromTimestamp != null && toTimestamp != null) {
+            dataList = dataList.stream()
+                    .filter(data -> data.getTimestamp().compareTo(fromTimestamp) >= 0 &&
+                                    data.getTimestamp().compareTo(toTimestamp) <= 0)
+                    .collect(Collectors.toList());
+        }
+
+        // Convert to NBI format and return
+        return dataList.stream()
+                .map(PerformanceDataMapper::mapToNbiFormat)
+                .collect(Collectors.toList());
+    }
+}
