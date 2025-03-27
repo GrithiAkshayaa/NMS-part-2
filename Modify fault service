@@ -1,0 +1,37 @@
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
+import java.util.*;
+
+@Service
+public class FaultService {
+
+    private final RestTemplate restTemplate;
+
+    @Value("${getAllAlarms}")
+    private String getAllAlarmsUrl;
+
+    @Value("${getSeverity}")
+    private String getSeverityUrl;
+
+    @Autowired
+    public FaultService(RestTemplate restTemplate, JsonToPropertiesConverter converter) {
+        this.restTemplate = restTemplate;
+        converter.convertJsonToProperties(); // Convert JSON to properties on startup
+    }
+
+    public Map<String, Object> getAllAlarms() {
+        List<Map<String, Object>> apiResponse = restTemplate.getForObject(getAllAlarmsUrl, List.class);
+        
+        // Convert response to TAPI format
+        Map<String, Object> tapiResponse = new HashMap<>();
+        tapiResponse.put("tapi-notification:notification", apiResponse);
+        return tapiResponse;
+    }
+
+    public List<Map<String, Object>> getAlarmsBySeverity(String severity) {
+        String severityUrl = getSeverityUrl.replace("{level}", severity);
+        return restTemplate.getForObject(severityUrl, List.class);
+    }
+}
