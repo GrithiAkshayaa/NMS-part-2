@@ -1,0 +1,34 @@
+@GetMapping("/tapi-format")
+    public Map<String, Object> getFaultsInTapiFormat() {
+        List<Fault> faults = faultRepository.getAllFaults();
+
+        List<Map<String, Object>> topologyList = faults.stream().map(fault -> {
+            Map<String, Object> topology = new HashMap<>();
+            topology.put("topology-uuid", "T" + fault.getId());
+            topology.put("uuid", "T" + fault.getId());
+
+            List<Map<String, String>> nameList = new ArrayList<>();
+
+            nameList.add(Map.of("value-name", "AlarmID", "value", fault.getId()));
+            nameList.add(Map.of("value-name", "Severity", "value", fault.getSeverity()));
+            nameList.add(Map.of("value-name", "Type", "value", fault.getTypeId()));
+            nameList.add(Map.of("value-name", "Text", "value", fault.getText()));
+            nameList.add(Map.of("value-name", "Resource", "value", fault.getResource()));
+            nameList.add(Map.of("value-name", "Timestamp", "value", fault.getTimeCreated()));
+
+            topology.put("name", nameList);
+
+            return topology;
+        }).collect(Collectors.toList());
+
+        Map<String, Object> topologyContext = new HashMap<>();
+        Map<String, Object> nwTopologyService = new HashMap<>();
+
+        nwTopologyService.put("topology", topologyList);
+        topologyContext.put("nw-topology-service", nwTopologyService);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("topology-context", topologyContext);
+
+        return response;
+    }
